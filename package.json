@@ -1,0 +1,29 @@
+{
+  "name": "gestor-documental",
+  "version": "1.0.0",
+  "description": "Document management service with Clean Architecture and CQRS",
+  "main": "dist/main.js",
+  "scripts": {
+    "build": "tsc -p tsconfig.json",
+    "start": "node dist/main.js",
+    "start:dev": "ts-node-dev --respawn --transpile-only src/main.ts",
+    "lint": "echo \"No lint task configured\""
+  },
+  "keywords": [],
+  "author": "",
+  "license": "MIT",
+  "dependencies": {
+    "@azure/cosmos": "^4.0.0",
+    "@fastify/swagger": "^8.14.0",
+    "@fastify/swagger-ui": "^1.10.1",
+    "dotenv": "^16.4.5",
+    "fastify": "^4.26.2",
+    "undici": "^6.6.2"
+  },
+  "devDependencies": {
+    "@types/node": "^20.11.17",
+    "ts-node": "^10.9.2",
+    "ts-node-dev": "^2.0.0",
+    "typescript": "^5.3.3"
+  }
+}

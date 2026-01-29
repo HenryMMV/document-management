@@ -1,0 +1,77 @@
+version: '3.9'
+
+###############################################################################
+# docker-compose stack for local/CI execution following Clean Architecture.   #
+# - app:      Node.js API container built from the secure multi-stage Dockerfile
+# - cosmos:   Azure Cosmos DB Linux emulator for persistence
+# - azurite:  Azure Storage emulator for file/blob interactions               #
+###############################################################################
+services:
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: gestor-documental-app:latest
+    env_file:
+      - .env
+    ports:
+      - "3000:3000"
+    depends_on:
+      cosmos:
+        condition: service_healthy
+      azurite:
+        condition: service_started
+    restart: unless-stopped
+    networks:
+      - backend
+
+  cosmos:
+    image: mcr.microsoft.com/cosmosdb/linux/azure-cosmos-emulator:latest
+    environment:
+      AZURE_COSMOS_EMULATOR_PARTITION_COUNT: 3
+      AZURE_COSMOS_EMULATOR_ENABLE_DATA_PERSISTENCE: 'true'
+      AZURE_COSMOS_EMULATOR_IP_ADDRESS_OVERRIDE: 0.0.0.0
+      AZURE_COSMOS_EMULATOR_KEY: C2y6yDjf5/R+ob0N8A7Cgv30VRDJIWEhLMOcbndo8A==
+      AZURE_COSMOS_EMULATOR_CERTIFICATE: /tmp/emulatorcert.cer
+    ports:
+      - "8081:8081"
+      - "10251:10251"
+      - "10252:10252"
+      - "10253:10253"
+      - "10254:10254"
+      - "10255:10255"
+      - "10256:10256"
+      - "10257:10257"
+      - "10258:10258"
+      - "10259:10259"
+    healthcheck:
+      test: ["CMD", "bash", "-c", "curl -f https://localhost:8081/_explorer/emulator.pem || exit 1"]
+      interval: 20s
+      timeout: 5s
+      retries: 10
+      start_period: 30s
+    volumes:
+      - cosmos-data:/data
+    networks:
+      - backend
+
+  azurite:
+    image: mcr.microsoft.com/azure-storage/azurite:latest
+    command: azurite --blobHost 0.0.0.0 --queueHost 0.0.0.0 --tableHost 0.0.0.0
+    ports:
+      - "10000:10000"
+      - "10001:10001"
+      - "10002:10002"
+    volumes:
+      - azurite-data:/data
+    networks:
+      - backend
+    restart: unless-stopped
+
+networks:
+  backend:
+    driver: bridge
+
+volumes:
+  cosmos-data:
+  azurite-data:
